@@ -142,6 +142,13 @@ class SuperBombardero(Avion):
             self.x -= 1
 
     
+    '''En el método disparar del superbombardero, como aparece muy poco y tienen un movimiento muy fijo, le hemos establecido unos disparos también
+    fijos. El superbombardero dispara cinco ráfagas de tres disparos, que se iteran con el mismo contador que se usa para el movimiento. Los proyectiles
+    del superbombardero tienen su propia clase, ya que el disparo al no ser aleatorio, necesitamos introducir su valor de x y de y por parámetro,
+    que los modificamos según la posición del superbombardero a la hora de disparar la ráfaga (si el superbombarddero está muy a la izquierda,
+    introduciremos unos valores por parámetro para que la ráfaga vaya hacia la derecha) 
+    '''
+    
     def disparar(self):
         #Primera ráfaga
         if self.contador == 312:
@@ -184,6 +191,10 @@ class SuperBombardero(Avion):
         elif self.contador == 918:    
             self.disparos.append(ProyectilSb(self.x + 30, self.y + 30, config.PROYECTIL_SB, -3, 3))
 
+    '''El método morir se activa cuando el self.alive del superbombardero es False. Utiliza un contador específico creado solo para la animación de
+    muerte, y va iterando cada sprite a la vez que el contador_muerte va avanzando.  
+    '''
+    
     def morir(self):
         if self.contador_muerte < 10:
             self.sprite = config.SB_MUERTE_1 

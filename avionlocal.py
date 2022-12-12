@@ -176,7 +176,7 @@ class AvionJugador(Avion):
             self.highScore = self.puntuacion
         self.puntuacionFinal += self.puntuacion
         self.puntuacion = 0
-        # self.sprite = config.AVION_JUGADOR_SPRITE
+        self.sprite = config.AVION_JUGADOR_SPRITE
         self.numeroVolteretas = 3
         self.respawn -= 1
         self.health = 1
