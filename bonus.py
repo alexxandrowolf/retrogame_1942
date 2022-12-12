@@ -22,6 +22,9 @@ class BonusEnemigoRojo:
         return self.bonus
 
     def duracionBonus(self):
+        
+        if self.devolverTipoBonus() == "fatMan" and self.contador == 1:
+            self.contador = 200
         if self.contador == 200: #El bonus activado tiene una duración de 200 frames
             self.alive = False
         self.contador += 1

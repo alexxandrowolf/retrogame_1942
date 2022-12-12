@@ -3,6 +3,10 @@ from avionMadre import Avion
 from proyectil_sb import ProyectilSb
 
 class SuperBombardero(Avion):
+    '''Realizamos herencia para que el superbombardero reciba los mismos métodos de la clase Avion, al igual que los atributos del init tal como
+    nave, stats...
+    '''
+    
     def __init__(self, nave: list, stats: list = None):
 
         super().__init__(nave, stats)
@@ -14,8 +18,10 @@ class SuperBombardero(Avion):
         
 
     def move(self):
-        if self.y <= -100:
+        if self.y <= -100:  #Establecemos que si el superbombardero sale del mapa su self.alive pase a False
             self.alive = False
+
+        #A partir de aquí, utilizamos contadores que se actualizan cada frame para hacer el movimiento
 
         if self.contador < 290:
             self.y -= 2
@@ -52,6 +58,11 @@ class SuperBombardero(Avion):
 
         self.contador += 2
 
+    '''Los cuatro métodos siguientes se utilizan para que el bombardero haga los giros en el move. Se les introduce por parámetro el contador actual,
+    para que se itere a partir de ese valor, y en cada intervalo los valores de x e y van variando, para así al final lograr el giro concreto que 
+    queremos
+    '''
+    
     def giro_izquierda_abajo(self, contador):
         if self.contador < contador + 15:
             self.y += 0.16

@@ -10,6 +10,7 @@ class AvionJugador(Avion):
         self.contador_left = 0
         self.contador_retorno = 0
         self.contador_voltereta = 0
+        self.numeroVolteretas = 3
         self.voltereta = False
 
         self.highScore = 0
@@ -175,10 +176,11 @@ class AvionJugador(Avion):
             self.highScore = self.puntuacion
         self.puntuacionFinal += self.puntuacion
         self.puntuacion = 0
-        self.alive = True
-        self.sprite = config.AVION_JUGADOR_SPRITE
+        # self.sprite = config.AVION_JUGADOR_SPRITE
+        self.numeroVolteretas = 3
         self.respawn -= 1
         self.health = 1
+        self.alive = True
         self.x, self.y = config.POSICION[0], config.POSICION[1]
     
     def gameover(self):

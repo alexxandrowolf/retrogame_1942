@@ -14,10 +14,9 @@ class Avion():
         #Otros atributos básicos
         self.stats = stats
         self.health = self.stats[0]
-        self.damage = self.stats[1]
-        self.speed = self.stats[2]
-        self.alive = self.stats[3]
-        self.puntuacion = self.stats[4]
+        self.speed = self.stats[1]
+        self.alive = self.stats[2]
+        self.puntuacion = self.stats[3]
         self.animacionMuerte = False
 
     @property
@@ -26,7 +25,7 @@ class Avion():
     @stats.setter
     def stats(self, stats):
         if stats == None:
-            self.__stats = [1, 1, 2, True, 10]
+            self.__stats = [1, 2, True, 10]
         else:
             self.__stats = stats    
 
@@ -45,7 +44,7 @@ class Avion():
 
     def perderVida(self):
         self.health -= 1
-        if self.health <= 0:
+        if self.health == 0:
             self.animacionMuerte = True
 
     def perderVida2(self):

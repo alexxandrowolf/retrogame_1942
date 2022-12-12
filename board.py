@@ -47,7 +47,8 @@ class App:
         ha acabado para así poder ejecutar su "reset" (explicado más adelante) 
         '''
 
-        self.puntuacionAuxiliar = 0
+        # self.puntuacionAuxiliar = 0 #Variable auxiliar para contabilizar la puntuacion del superbombardero
+        # self.puntuacionAuxiliar2 = 0  #Variable auxiliar para contabilizar la puntuación del bombardero
         self.resetearPuntuacion = True
         self.animacionAcabadaAuxiliar = False
 
@@ -94,7 +95,7 @@ class App:
         
 
     def update(self):
-        if pyxel.btn(pyxel.KEY_Q):
+        if pyxel.btn(pyxel.KEY_Q): #Establecemos que al pulsar la tecla Q se salga del juego
             pyxel.quit()
         
         if not self.start:
@@ -118,9 +119,18 @@ class App:
             #Eliminamos a todos los enemigos para que cuando reaparezca el jugador no haya ninguno
             self.enemigosRegulares.clear()
             self.enemigosRojos.clear()
+            self.bombarderos.clear()
             self.super_bombarderos.clear()
+            self.explosiones.clear()
+            self.bonusJugador.clear()
+            self.disparos.clear()
 
         if self.start and not self.gameover:
+            '''En esta parte del código escribimos lo que se va a ejecutar durante la partida. Las teclas de movimiento, que llaman
+            al método move del avión principal, (también establecemos que si no se pulsa ninguna tecla, ejecute move sin ningún parámetro,
+            lo cual es útil para las animaciones de movimiento, como veremos en el propio método). Por otro lado tenemos que al pulsar la
+            tecla espacio ejecute el método disparar del avión, y que al pulsar la tecla z ejecute el método hacer_voltereta del avión.
+            '''            
             for avion in self.avion:
                 if pyxel.btn(pyxel.KEY_LEFT):
                     avion.move("left")
@@ -133,9 +143,10 @@ class App:
                 pyxel.btn(pyxel.KEY_LEFT)
                 if not pyxel.btn(pyxel.KEY_LEFT) and not pyxel.btn(pyxel.KEY_RIGHT) and not pyxel.btn(pyxel.KEY_DOWN) and not pyxel.btn(pyxel.KEY_UP):
                     avion.move()
-                if pyxel.btnp(pyxel.KEY_SPACE) and not avion.voltereta:
+                if pyxel.btnp(pyxel.KEY_SPACE) and not avion.voltereta and avion.alive:
                     avion.disparar(self.disparoChetado)
-                if pyxel.btnp(pyxel.KEY_Z) and not avion.voltereta:
+                if pyxel.btnp(pyxel.KEY_Z) and not avion.voltereta and avion.numeroVolteretas > 0:
+                    avion.numeroVolteretas -= 1
                     avion.contador_voltereta = 0
                     avion.voltereta = True
                 if avion.voltereta:
@@ -154,21 +165,17 @@ class App:
                 if not avion.alive and self.animacionAcabadaAuxiliar:
                     self.animacionAcabadaAuxiliar = False
                     avion.reset()
-                    self.bonusJugador.clear()
-                    self.disparos.clear()
                     if avion.respawn == 0:
                         avion.gameover()
                         self.gameover = True
-                        # self.start = False
-                        self.explosiones.clear()
                     else:
                         self.interludio = True
+                    
 
                 if avion.animacionMuerte:
                     avion.animacionMuerte = False
-                    self.explosiones.append(Explosion(avion.x + avion.sprite[3]//2, avion.y + avion.sprite[4]//2, 10, False, True, config.SPRITES_EXPLOSION_POR_COLISION))
+                    self.explosiones.append(Explosion(avion.x + avion.sprite[3]//2, avion.y + avion.sprite[4]//2, config.SPRITES_EXPLOSION_POR_COLISION, config.CARACTERISTICAS_EXPLOSION_JUGADOR))
                     avion.alive = False
-                    avion.x, avion.y = 0, 256                
             
             for avion in self.avion:
                 for disparo in avion.disparos:
@@ -177,7 +184,7 @@ class App:
                         avion.disparos.pop(avion.disparos.index(disparo))
 
             #Establecemos la periodicidad con la que los enemigos van a aparecer
-            if pyxel.frame_count % 10000 == 0:
+            if pyxel.frame_count % 200000 == 0:
                 for i in range(random.randint(2, 5)):
                     lado = random.randint(0,1)
                     if lado == 0:
@@ -189,10 +196,10 @@ class App:
                 for i in range(0, 5):
                     self.enemigosRojos.append(EnemigoRojo([config.ROJO_DCHA_LOOP, [-30 - (i * 40), 40]]))
 
-            if pyxel.frame_count % 10000 == 0:
+            if pyxel.frame_count % 200 == 0:
                 self.bombarderos.append(Bombardero([config.BOMBARDERO_DIMENSIONES_ABAJO, [60, -50]]))
 
-            if pyxel.frame_count % 400 == 0:
+            if pyxel.frame_count % 500000 == 0:
                 self.super_bombarderos.append(SuperBombardero([config.SUPER_BOMBARDERO_DIMENSIONES ,config.POSICION_SB], [20,-1,-1,True, 100]))
 
             #Super bombardero
@@ -204,24 +211,23 @@ class App:
                 if not sb.alive:
                     sb.morir()
 
+                if sb.contador_muerte == 2:
+                    for avion in self.avion:
+                        avion.superbombardero += 1
+                        avion.puntuacion += sb.puntuacion
+
                 if not sb.alive and len(sb.disparos) == 0 and sb.contador_muerte >= 209:
-                    if self.puntuacionAuxiliar == sb.puntuacion:
-                        for avion in self.avion:
-                            avion.superbombardero += 1
-                            avion.puntuacion += sb.puntuacion
-                    self.puntuacionAuxiliar = 0
                     self.super_bombarderos.pop(self.super_bombarderos.index(sb))
 
                 for avion in self.avion:
                     for disparo in avion.disparos:
                         if self.colisiones(disparo, sb) and sb.alive:
-                            self.puntuacionAuxiliar += 5
                             disparo.alive = False
                             sb.perderVida2()
                             
                     
                 for avion in self.avion:
-                    if self.colisiones(avion, sb) and sb.alive and not avion.voltereta:
+                    if self.colisiones(avion, sb) and sb.alive and not avion.voltereta and avion.alive:
                         sb.disparos.clear()
                         sb.perderVida2()
                         avion.perderVida()
@@ -248,14 +254,19 @@ class App:
                         self.disparos.append(DisparoEnemigo([bombardero.x + bombardero.sprite[3]//3, bombardero.y + bombardero.sprite[4]//2], [avion.x, avion.y], config.PROYECTIL_SB))
                 
                 if bombardero.animacionMuerte:
-                    self.explosiones.append(Explosion(bombardero.x + bombardero.sprite[3]//2, bombardero.y + bombardero.sprite[4]//2, 6, False, False, config.SPRITES_EXPLOSION_BOMBARDERO))
+                    self.explosiones.append(Explosion(bombardero.x + bombardero.sprite[3]//2, bombardero.y + bombardero.sprite[4]//2, config.SPRITES_EXPLOSION_BOMBARDERO, config.CARACTERISTICAS_EXPLOSION_BOMBARDERO))
                     bombardero.alive = False 
 
                 for avion in self.avion:
-                    if self.colisiones(bombardero, avion):
+                    if self.colisiones(bombardero, avion) and not avion.voltereta and avion.alive:
                         avion.perderVida()
+                        bombardero.perderVida()
 
                 if not bombardero.alive:
+                    if bombardero.health == 0:
+                        for avion in self.avion:
+                            avion.bombardero += 1
+                            avion.puntuacion += bombardero.puntuacion
                     self.bombarderos.pop(self.bombarderos.index(bombardero))
 
             #Enemigo Regular
@@ -263,7 +274,7 @@ class App:
                 for avion in self.avion:    
                     if enemigo.y + 45 >= avion.y: 
                         enemigo.giro()
-                    if self.colisiones(enemigo, avion) and not avion.voltereta:
+                    if self.colisiones(enemigo, avion) and not avion.voltereta and avion.alive:
                         avion.perderVida()
                         enemigo.perderVida()
                 if enemigo.y <= -20 and enemigo.contador_giro != 0:
@@ -277,10 +288,14 @@ class App:
                 enemigo.moverse()        
 
                 if enemigo.animacionMuerte:
-                    self.explosiones.append(Explosion(enemigo.x + enemigo.sprite[3]//2, enemigo.y + enemigo.sprite[4]//2, 2, True, False, config.SPRITES_EXPLOSION_POR_DISPARO))
+                    self.explosiones.append(Explosion(enemigo.x + enemigo.sprite[3]//2, enemigo.y + enemigo.sprite[4]//2, config.SPRITES_EXPLOSION_POR_DISPARO))
                     enemigo.alive = False  
                 
                 if not enemigo.alive:
+                    if enemigo.health <= 0:
+                        for avion in self.avion:
+                            avion.puntuacion += enemigo.puntuacion
+                            avion.regular += 1
                     self.enemigosRegulares.pop(self.enemigosRegulares.index(enemigo))
                 
             #Enemigo Rojo
@@ -289,15 +304,19 @@ class App:
                 enemigo.moverse()
 
                 for avion in self.avion:
-                    if self.colisiones(enemigo, avion) and not avion.voltereta:
+                    if self.colisiones(enemigo, avion) and not avion.voltereta and avion.alive:
                             avion.perderVida()
                             enemigo.perderVida()
 
                 if enemigo.animacionMuerte:
-                    self.explosiones.append(Explosion(enemigo.x + enemigo.sprite[3]//2, enemigo.y + enemigo.sprite[4]//2, 2, True, False, config.SPRITES_EXPLOSION_POR_DISPARO))
+                    self.explosiones.append(Explosion(enemigo.x + enemigo.sprite[3]//2, enemigo.y + enemigo.sprite[4]//2, config.SPRITES_EXPLOSION_POR_DISPARO))
                     enemigo.alive = False 
                 
                 if not enemigo.alive:
+                    if enemigo.health <= 0:
+                        for avion in self.avion:
+                            avion.puntuacion += enemigo.puntuacion
+                            avion.rojo += 1
                     self.enemigosRojos.pop(self.enemigosRojos.index(enemigo))
                         
             #Lógica de la explosión
@@ -327,8 +346,6 @@ class App:
                 for avion in self.avion:
                     for disparo in avion.disparos:
                         if self.colisiones(disparo, enemigo):
-                            avion.regular += 1
-                            avion.puntuacion += enemigo.puntuacion
                             disparo.alive = False
                             enemigo.perderVida()
 
@@ -337,8 +354,6 @@ class App:
                     for disparo in avion.disparos:
                         if self.colisiones(disparo, enemigo):
                             self.enemigosRojosDerrotados += 1
-                            avion.puntuacion += enemigo.puntuacion
-                            avion.rojo += 1
                             disparo.alive = False
                             enemigo.perderVida()
 
@@ -364,7 +379,7 @@ class App:
 
 
             #Construimos la lógica de los bonus
-            if self.enemigosRojosDerrotados == 5:
+            if self.enemigosRojosDerrotados == 5: 
                 self.enemigosRojosDerrotados = 0
                 self.bonusEnemigoRojo = True
                 self.bonusJugador.append(BonusEnemigoRojo(random.randint(25, 225), random.randint(85, 225), random.randint(0,2)))
@@ -376,30 +391,32 @@ class App:
                             avion.health = 1000000
                             for sb in self.super_bombarderos:
                                 sb.health = 1
+                            for bombardero in self.bombarderos:
+                                bombardero.health = 1
                     elif bonus.devolverTipoBonus() == "proyectilChetado":
                         self.disparoChetado = True
                     else:
                         for avion in self.avion:
                             for enemigo in self.enemigosRegulares:
-                                avion.regular += 1
-                                avion.puntuacion += enemigo.puntuacion
+                                # avion.regular += 1
+                                # avion.puntuacion += enemigo.puntuacion
+                                enemigo.health = 0
                                 enemigo.animacionMuerte = True
                                 
                             for enemigo in self.enemigosRojos:
-                                avion.rojo += 1
-                                avion.puntuacion += enemigo.puntuacion
+                                # avion.rojo += 1
+                                # avion.puntuacion += enemigo.puntuacion
+                                enemigo.health = 0
                                 enemigo.animacionMuerte = True
                             
                             for bombardero in self.bombarderos:
-                                avion.bombardero += 1
-                                avion.puntuacion += bombardero.puntuacion
-                                enemigo.animacionMuerte = True
+                                bombardero.health = 0
+                                bombardero.animacionMuerte = True
                                 
                             for sb in self.super_bombarderos:
-                                avion.superbombardero += 1
-                                avion.puntuacion += sb.puntuacion
+                                sb.health = 0
                                 sb.alive = False
-                                
+                                                        
                     bonus.duracionBonus() #Cuando el bonus está activado tiene una duración determinada
                 else:
                     bonus.duracionDisplayBonusEnPantalla()
@@ -410,6 +427,8 @@ class App:
                     self.disparoChetado = False
                     for sb in self.super_bombarderos:
                         sb.health = 20
+                    for bombardero in self.bombarderos:
+                        bombardero.health = 5
                     self.bonusJugador.pop(self.bonusJugador.index(bonus))
 
     def draw(self):
@@ -426,12 +445,14 @@ class App:
             
             pyxel.text(5, 5,"HIGH SCORE:", col=7)
             pyxel.text(5, 15, "SCORE:", col=7)
-            pyxel.text(220, 5,"VIDAS:", col=7)
+            pyxel.text(200, 5,"VOLTERETAS:", col=7)
+            pyxel.text(220, 15,"VIDAS:", col=7)
 
             for avion in self.avion:
                 pyxel.text(60, 5, str(avion.highScore), col=7)
                 pyxel.text(40, 15, str(avion.puntuacion), col=7)
-                pyxel.text(245, 5, str(avion.respawn), col=7)
+                pyxel.text(245, 5, str(avion.numeroVolteretas), col=7)
+                pyxel.text(245, 15, str(avion.respawn), col=7)
 
         if not self.start and not self.gameover:
             self.pantallaInicio()
@@ -453,7 +474,7 @@ class App:
             for sb in self.super_bombarderos:
                 if sb.alive or sb.contador_muerte < 630: 
                     sb.drawAvion()
-                    pyxel.blt(*sb.blt, colkey = 8)
+                    pyxel.blt(*sb.blt, colkey = 7)
                 for disparo in sb.disparos: 
                     disparo.draw()
                     pyxel.blt(*disparo.blt, colkey=7)
@@ -467,7 +488,7 @@ class App:
             for bombardero in self.bombarderos:
                 if bombardero.alive:
                     bombardero.drawAvion()
-                    pyxel.blt(*bombardero.blt, colkey=8)        
+                    pyxel.blt(*bombardero.blt, colkey=7)        
             
             for enemigo in self.enemigosRegulares:
                 enemigo.drawAvion()
