@@ -49,4 +49,3 @@ class Explosion:
 
     def draw(self):
         self.blt = (self.x, self.y, *self.spritesExplosion[self.indiceSprite])
-    

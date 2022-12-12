@@ -117,7 +117,7 @@ class AvionJugador(Avion):
     
     def disparar(self, disparoChetado):
         if not disparoChetado:
-            self.disparos.append(Proyectil(self.x + 7, self.y - 2, config.PROYECTIL_JUGADOR)) #Encapsulación
+            self.disparos.append(Proyectil(self.x + 7, self.y - 2, config.PROYECTIL_JUGADOR)) 
         else:
             self.disparos.append(Proyectil(self.x + 7, self.y - 2, [config.PROYECTIL_CHETADO, 5]))
    
@@ -185,5 +185,3 @@ class AvionJugador(Avion):
     
     def gameover(self):
         self.respawn = 3                                                                  
-        
-

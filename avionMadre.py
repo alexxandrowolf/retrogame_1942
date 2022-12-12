@@ -1,4 +1,5 @@
 class Avion():
+
     '''Esta clase va a ser nuestra clase madre para todos los aviones, enemigos incluidos. En el init vemos que se introducen por parametro una lista
     denominada nave, en cuya primera posición está el sprite del avión (que en el draw de board será introducido en el pyxel.blt para pintar el avión),
     y en la segunda posición se introducirá la posición que va a tener el avión en el momento de su creación. Acto seguido se introduce por parámetro
@@ -64,5 +65,3 @@ class Avion():
         self.health -= 1
         if self.health == 0:
             self.alive = False        
-
-

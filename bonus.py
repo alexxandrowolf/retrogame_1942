@@ -34,4 +34,3 @@ class BonusEnemigoRojo:
             if self.contador_2 == 150: #Si el bonus no se activa desaparece a los 150 frames
                 self.alive = False
             self.contador_2 += 1
-    

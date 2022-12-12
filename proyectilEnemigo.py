@@ -50,4 +50,3 @@ class DisparoEnemigo:
 
     def draw(self):
         self.blt = (self.x,  self.y, self.sprite[0], self.sprite[1], self.sprite[2], self.sprite[3], self.sprite[4])
-        

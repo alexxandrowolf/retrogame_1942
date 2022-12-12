@@ -29,9 +29,6 @@ class App:
         self.gameover = False
         
         '''
-        PuntuaciónAuxiliar nos va a ayudar a gestionar la puntuación. En nuestro videojuego cada vez
-        que matas a un enemigo te suma en un contador interno del jugador el número de enemigos a los que has derrotado
-        
         Cada enemigo tiene asociada una puntuación de modo, que cuando existe una colisión entre el disparo
         del jugador y el enemigo este suma al jugador su puntuación. Sin embargo, existen dos enemigos especiales:
         el bombardero y el superbombardero que requieren de variables auxiliares para ir sumando fracciones de
@@ -47,8 +44,6 @@ class App:
         ha acabado para así poder ejecutar su "reset" (explicado más adelante) 
         '''
 
-        # self.puntuacionAuxiliar = 0 #Variable auxiliar para contabilizar la puntuacion del superbombardero
-        # self.puntuacionAuxiliar2 = 0  #Variable auxiliar para contabilizar la puntuación del bombardero
         self.resetearPuntuacion = True
         self.animacionAcabadaAuxiliar = False
 
@@ -108,6 +103,10 @@ class App:
                     self.avion.bombardero = 0
                     self.avion.superbombardero = 0
                     self.resetearPuntuacion = False
+        
+        '''Si el atributo respawn del avión se hace 0 (es decir, las vidas que tiene el jugador), self.gameover pasa a True, y el juego entra en la
+        pantalla de GameOver, en la que te pone las estadísticas de tu partida y en la que si pulsas la tecla x, vuelves a la pantalla inicial'''
+        
         if self.gameover:
             if pyxel.btn(pyxel.KEY_X):
                 self.gameover = False
@@ -125,6 +124,7 @@ class App:
             self.disparos.clear()
 
         if self.start and not self.gameover:
+
             '''En esta parte del código escribimos lo que se va a ejecutar durante la partida. Las teclas de movimiento, que llaman
             al método move del avión principal, (también establecemos que si no se pulsa ninguna tecla, ejecute move sin ningún parámetro,
             lo cual es útil para las animaciones de movimiento, como veremos en el propio método). Por otro lado tenemos que al pulsar la
@@ -168,18 +168,30 @@ class App:
                     self.gameover = True
                 else:
                     self.interludio = True
-                
+
+            '''Cuando se ejecuta el metodo del avion perderVida y se hace 0, animacionMuerte pasa a ser True y activa esta condición. Lo que hace es 
+            insertar un objeto de la clase Explosion a la lista self.explosiones de board, justo en la posición en la que ha muerto el jugador. Este 
+            objeto lo único que hace es una animación de explosión, antes de desaparecer. Además, establece el alive del avión a False'''
+
             if self.avion.animacionMuerte:
                 self.avion.animacionMuerte = False
                 self.explosiones.append(Explosion(self.avion.x + self.avion.sprite[3]//2, self.avion.y + self.avion.sprite[4]//2, config.SPRITES_EXPLOSION_POR_COLISION, config.CARACTERISTICAS_EXPLOSION_JUGADOR))
                 self.avion.alive = False
+
+            '''Cuando pulsamos la tecla espacio y se ejecuta el método disparar del avión, en la lista disparos (atributo del avión), se inserta
+            un objeto proyectil. Este bucle for se recorre constantemente esta lista, haciendo posible que los misiles del avion se muevan e interactúen
+            correctamente con el resto de enemigos. Cuando disparo.alive se hace False (ya sea por que sale de la pantalla o por que colisiona con
+            algún enemigo), simplemente se borra ese proyectil de la lista'''
             
             for disparo in self.avion.disparos:
                 disparo.update()
                 if not disparo.alive:
                     self.avion.disparos.pop(self.avion.disparos.index(disparo))
 
-            #Establecemos la periodicidad con la que los enemigos van a aparecer
+            '''En este apartado simplemente establecemos cada cuántos frames va a aparecer cada enemigo, utilizando el pyxel.frame_count e insertando 
+            el número deseado de enemigos en su lista correspondiente. Los enemigos regulares aparecen cada 200 frames, los enemigos rojos cada 600,
+            los bombarderos medianos cada 700, y los superbombarderos cada 1250.'''
+            #Enemigos Regulares
             if pyxel.frame_count % 150 == 0:
                 for i in range(random.randint(2, 5)):
                     lado = random.randint(0,1)
@@ -188,16 +200,32 @@ class App:
                     else:
                         self.enemigosRegulares.append(EnemigoRegular([config.ENEMIGO_REGULAR_DIMENSIONES_1, [random.randint(230,280), random.randint(-300,-10)]]))
            
+            '''Los enemigos rojos aparecen de cinco en cinco. Aprovechamos el bucle for para hacer que cada uno aparezca más a la izquierda que el
+            anterior, con la idea de que no aparezcan los cinco en la misma posición'''
+            
+            #Enemigos Rojos
             if pyxel.frame_count % 600 == 0:
-                self.enemigosRojosDerrotados = 0 #Controlamos que cada vez que aparezcan los enemigos rojos su contador para el bonus se restablezca
+                self.enemigosRojosDerrotados = 0 
                 for i in range(0, 5):
                     self.enemigosRojos.append(EnemigoRojo([config.ROJO_DCHA_LOOP, [-30 - (i * 40), 40]]))
 
+            #Bombardero
             if pyxel.frame_count % 500 == 0:
                 self.bombarderos.append(Bombardero([config.BOMBARDERO_DIMENSIONES_ABAJO, [60, -50]]))
 
+            #Superbombardero
             if pyxel.frame_count % 1000 == 0:
                 self.super_bombarderos.append(SuperBombardero([config.SUPER_BOMBARDERO_DIMENSIONES ,config.POSICION_SB], [20,-1,-1,True, 100]))
+
+            '''En el sigguiente bucle for establecemos la lógica del superbombardero. si su atributo alive es True, se ejecutan los métodos move
+            y disparar, y si es False se ejecuta el método morir. Si su atributo contador_muerte es igual a 2, significa que el avión ha sido eliminado
+            por el jugador, por lo que se le suma a las estadísticas del jugador. Otra implementación es que cuando el enemigo elimina al superbombardero,
+            no se elimina inmediatamente, si no que espera a que se ejecute la animación de muerte, y a que los disparos hayan salido de la pantalla, ya 
+            que si no se eliminarían también los disparos, pues estos pertenecen al objeto (por supuesto mientras ocurre la animación no existen colisiones
+            con el jugador). También se elimina si posicion_muerte es True, que significa que el supercombardero ha salido de la pantalla. Por último se 
+            establecen las colisiones entre las balas del bombardero y el jugador, entre el propio bombardero y el jugador, y entre las balas del jugador y
+            el bombardero, con sus respectivas pérdidas de salud y desapariciones de los disparos (para las colisiones utilizamos un método general que se 
+            explica más abajo)'''
 
             #Super bombardero
             for sb in self.super_bombarderos:
@@ -236,6 +264,9 @@ class App:
                     if self.colisiones(self.avion, disparo) and not self.avion.voltereta:
                         disparo.alive = False
                         self.avion.perderVida()
+            
+            '''En el caso del bombardero mediano, el disparo es diferente, ya que no son disparos prefijados como en el superbombardero. Se realizan de manera
+            aleatoria, con una posibilidad de 1 entre 100 (que por cada frame no es tan poco como parece). '''
             #Bombardero
             for bombardero in self.bombarderos:
                 if bombardero.alive:

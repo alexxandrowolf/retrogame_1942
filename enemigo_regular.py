@@ -71,10 +71,3 @@ class EnemigoRegular(Avion):
             self.x -= 1
             self.y -= 1
             self.sprite = config.ENEMIGO_REGULAR_DIMENSIONES_4        
-            
-            
-
-             
-
-
-    
