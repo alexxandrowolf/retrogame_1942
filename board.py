@@ -180,7 +180,7 @@ class App:
                     self.avion.disparos.pop(self.avion.disparos.index(disparo))
 
             #Establecemos la periodicidad con la que los enemigos van a aparecer
-            if pyxel.frame_count % 200 == 0:
+            if pyxel.frame_count % 150 == 0:
                 for i in range(random.randint(2, 5)):
                     lado = random.randint(0,1)
                     if lado == 0:
@@ -193,10 +193,10 @@ class App:
                 for i in range(0, 5):
                     self.enemigosRojos.append(EnemigoRojo([config.ROJO_DCHA_LOOP, [-30 - (i * 40), 40]]))
 
-            if pyxel.frame_count % 700 == 0:
+            if pyxel.frame_count % 500 == 0:
                 self.bombarderos.append(Bombardero([config.BOMBARDERO_DIMENSIONES_ABAJO, [60, -50]]))
 
-            if pyxel.frame_count % 1250 == 0:
+            if pyxel.frame_count % 1000 == 0:
                 self.super_bombarderos.append(SuperBombardero([config.SUPER_BOMBARDERO_DIMENSIONES ,config.POSICION_SB], [20,-1,-1,True, 100]))
 
             #Super bombardero
@@ -416,15 +416,16 @@ class App:
             pyxel.blt(0, isla1_x, 0, 0, 0, 101, 151, colkey=0)
             pyxel.blt(pyxel.width - 131, isla2_x, 0, 124, 0, 131, 126, colkey=0) 
             
-            pyxel.text(5, 5,"HIGH SCORE:", col=7)
-            pyxel.text(5, 15, "SCORE:", col=7)
-            pyxel.text(200, 5,"VOLTERETAS:", col=7)
-            pyxel.text(220, 15,"VIDAS:", col=7)
+            if self.start:
+                pyxel.text(5, 5,"HIGH SCORE:", col=7)
+                pyxel.text(5, 15, "SCORE:", col=7)
+                pyxel.text(200, 5,"VOLTERETAS:", col=7)
+                pyxel.text(220, 15,"VIDAS:", col=7)
 
-            pyxel.text(60, 5, str(self.avion.highScore), col=7)
-            pyxel.text(40, 15, str(self.avion.puntuacion), col=7)
-            pyxel.text(245, 5, str(self.avion.numeroVolteretas), col=7)
-            pyxel.text(245, 15, str(self.avion.respawn), col=7)
+                pyxel.text(60, 5, str(self.avion.highScore), col=7)
+                pyxel.text(40, 15, str(self.avion.puntuacion), col=7)
+                pyxel.text(245, 5, str(self.avion.numeroVolteretas), col=7)
+                pyxel.text(245, 15, str(self.avion.respawn), col=7)
 
         if not self.start and not self.gameover:
             self.pantallaInicio()
