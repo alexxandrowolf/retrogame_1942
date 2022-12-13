@@ -23,3 +23,10 @@ Para poder jugar a nuestra versión del 1942 es necesario que sigas los siguient
 
 *NOTA* Es importante que en la ubicación donde tengas guardado el juego respetes la carpeta “assets” ya que ahí están guardados los sprites del juego.
 Dependiendo del tu sistema operativo algunos comandos como **py** puede que sean **python3**.
+
+## Controles
+- Cruz de Flechas: Moverse
+- ESPACIO: Disparar
+- Z: Hacer con el avión una pirueta
+- S: Empezar la partida
+- X: Salir de la pantalla "Gameover"
