@@ -1,17 +1,30 @@
 import config
 import pyxel
 from avionMadre import Avion
-
+'''La clase de los enemigos rojos, que recibe herencia de la clase madre Avion'''
 class EnemigoRojo(Avion):
     def __init__(self, nave: list, stats = None):
         super().__init__(nave, stats)
         self.looping = False
-        self.speed = 2
+                
         self.contadorAngulos = 0
+        
         self.X_looping = 0
         self.Y_looping = 0
+        
         self.primerLoopingCompletado = False
 
+    '''
+    Los enemigos Rojos trazan su trayectoria a partir de funciones trigonométricas:
+    A través de self.X_Looping y self.y_Looping determinamos que alrededor de un punto (x, y) a través
+    de un contador que representa ángulos, se le pone como parámetro a la función coseno (abcisa) y
+    la función seno (ordenada) de modo, estos atributos van cambiando realizando una circunferencia.
+
+    Luego simplemente indicamos al avión que se aproxime a esas coordenadas y dependiendo del ángulo
+    en el que se encuentre se le asigna un sprite u otro. En la práctica no realiza una circunferencia
+    como tal sino un cuadrado, esto se debe a que como pyxel no reconoce valores reales, nuestro aviones
+    lograban realizar una circunferencia perfecta pero generaban un efecto visual feo.
+    '''
     def moverse(self):
         if not self.looping:
             self.x += self.speed

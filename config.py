@@ -1,12 +1,14 @@
 import random
+'''Primero establecemos variables generales como el ancho y largo de la pantalla, y el título de la ventana'''
 WIDHT_PANTALLA = 256
 HEIGHT_PANTALLA = 256  
 PANTALLA = [WIDHT_PANTALLA, HEIGHT_PANTALLA]
 CAPTION = "1942"
 
+'''Sprite estñandar del avión del jugador'''
 AVION_JUGADOR_SPRITE = [0, 0, 0, 26, 17]
 
-#Sprites de giro
+'''Sprites de la animación de giro del avión jugador'''
 AVION_JUGADOR_SPRITE_LEFT_1 = [0, 65, 0, 26, 17]
 AVION_JUGADOR_SPRITE_LEFT_2 = [0, 129, 0, 23, 17]
 AVION_JUGADOR_SPRITE_LEFT_3 = [0, 195, 0, 20, 17]
@@ -14,7 +16,7 @@ AVION_JUGADOR_SPRITE_RIGHT_1 = [0, 33, 0, 25, 17]
 AVION_JUGADOR_SPRITE_RIGHT_2 = [0, 96, 0, 24, 17]
 AVION_JUGADOR_SPRITE_RIGHT_3 = [0, 161, 0, 20, 17]
 
-#Sprites de la voltereta
+'''Sprites de la animación de la voltereta del avión jugador'''
 AVION_JUGADOR_SPRITE_VOLTERETA_1 = [0, 0, 20, 28, 15]
 AVION_JUGADOR_SPRITE_VOLTERETA_2 = [0, 126, 21, 28, 12]
 AVION_JUGADOR_SPRITE_VOLTERETA_3 = [0, 30, 22, 30, 8]
@@ -31,7 +33,7 @@ AVION_JUGADOR_SPRITE_VOLTERETA_13 = [0, 209, 87, 26, 9]
 AVION_JUGADOR_SPRITE_VOLTERETA_14 = [0, 0, 41, 26, 12]
 AVION_JUGADOR_SPRITE_VOLTERETA_15 = [0, 0, 56, 26, 14]
 
-
+'''Los stats iniciales del avión'''
 POSICION = [120, 220]
 HP = 1
 SPD = 4
@@ -40,10 +42,13 @@ PNT = 0
 NAVE_JUGADOR = [AVION_JUGADOR_SPRITE,POSICION]
 STATS_NAVE_JUGADOR = [HP, SPD, ALV, PNT]
 
+'''El sprite del proyectil del jugador y su velocidad'''
 PROYECTIL_JUGADOR_SPRITE = [0, 72, 76, 12, 11]
 SPD_PROYECTIL_JUGADOR = 10
 PROYECTIL_JUGADOR = [PROYECTIL_JUGADOR_SPRITE, SPD_PROYECTIL_JUGADOR]  
 
+
+'''Los sprites del enemigo regular con sus animaciones'''
 ENEMIGO_REGULAR_DIMENSIONES_1 = [0, 0, 194, 16, 15]
 ENEMIGO_REGULAR_DIMENSIONES_2 = [0, 152, 194, 16, 12]
 ENEMIGO_REGULAR_DIMENSIONES_3 = [0, 234, 78, 16, 8] 
@@ -51,11 +56,8 @@ ENEMIGO_REGULAR_DIMENSIONES_4 = [0, 190, 195, 16, 12]
 ENEMIGO_REGULAR_DIMENSIONES_5 = [0, 76, 155, 16, 15]
 
 
-POSICION_E1 = [random.randint(0,256), -20]
-DIRECCION_E1 = [-1, 3]
-ENEMIGO_REGULAR = [ENEMIGO_REGULAR_DIMENSIONES_1, POSICION_E1]
 
-#Enemigo Rojo
+'''Los sprites del enemigo rojo con sus animaciones'''
 ROJO_DERECHA = [0, 1, 215, 15, 14]
 ROJO_IZQUIERDA = [0, 1, 174, 15, 14]
 ROJO_90_GRADOS = [0, 78, 237, 16, 15] 
@@ -71,14 +73,15 @@ ROJO_IZQ_LOOP = [0,21,177,13,12]
 ROJO_ABAJO_LOOP = [0,135,195,11,13]
 POSICION_E2 = [-30, 50]
 
-
+'''Posición y sprite inicial del enemigo rojo'''
 ENEMIGO_ROJO = [ROJO_DERECHA, POSICION_E2]
 
-#Super bombardero
+'''Sprite predeterminado del superbombardero, del proyectil, y su posición inicial'''
 SUPER_BOMBARDERO_DIMENSIONES = [1, 1, 60, 64, 48]
 POSICION_SB = [128, 300]
 PROYECTIL_SB = [[0,238, 13, 5, 5], 2]
 
+'''Sprites de la animación de muerte del superbombardero'''
 SB_MUERTE_1 = [1, 68, 60, 64, 48]
 SB_MUERTE_2_5 = [1, 135, 60, 64, 48]
 SB_MUERTE_3_6 = [1, 75, 3, 64, 48]
@@ -91,7 +94,7 @@ SB_MUERTE_12 = [2, 51, 49, 45, 29]
 SB_MUERTE_13 = [2, 99, 52, 40, 24]
 SB_MUERTE_14 = [2, 142, 52, 33, 22]
 
-#Animación explosión
+'''Sprites de las explosiones'''
 EXP_I = [0, 117, 77, 11, 9]
 EXP_II = [0, 132, 76, 13, 11]
 EXP_III = [0, 149, 74, 15, 14]
@@ -101,6 +104,7 @@ EXP_VI = [0, 208, 66, 15, 14]
 EXP_VII = [0, 240, 32, 15, 15]
 SPRITES_EXPLOSION_POR_DISPARO = [EXP_I, EXP_II, EXP_III, EXP_IV, EXP_V, EXP_VI, EXP_VII]
 
+'''Sprites de la explosión del bombardero'''
 BOMBARDERO_EXPLOSION_I = [1, 1, 226, 28, 26] 
 BOMBARDERO_EXPLOSION_II = [1, 32, 227, 24, 24] 
 BOMBARDERO_EXPLOSION_III = [1, 59, 229, 22, 20] 
@@ -109,7 +113,7 @@ BOMBARDERO_EXPLOSION_V = [1, 104, 238, 12, 11]
 BOMBARDERO_EXPLOSION_VI = [1, 120, 235, 18, 17] 
 SPRITES_EXPLOSION_BOMBARDERO = [BOMBARDERO_EXPLOSION_I, BOMBARDERO_EXPLOSION_II, BOMBARDERO_EXPLOSION_III, BOMBARDERO_EXPLOSION_IV, EXP_VII, EXP_VII, EXP_VII]
 
-
+'''Sprites para explosiones por colisión'''
 COL_I = [0,2,100,24,20]
 COL_II = [0,32,98,29,24]
 COL_III = [0,66,96,31,29]
@@ -118,7 +122,7 @@ COL_V = [0,136,97,29,28]
 COL_VI = [0, 172, 99, 27, 24]
 SPRITES_EXPLOSION_POR_COLISION = [COL_I, COL_II, COL_III, COL_IV, COL_V, COL_VI, EXP_VII]
 
-#Título
+'''Sprites del título'''
 # 1
 UNO = (0, 32, 3, 43, 61)
 # 9
@@ -128,12 +132,12 @@ CUATRO = (1, 4, 9, 63, 61)
 # 2
 DOS = (1, 73, 9, 59, 61)
 
-#Bonuses
+'''Sprites de los bonus'''
 ESTRELLA = (0, 144, 132, 15, 11) #Proporciona vida infinita durante un periodo de tiempo determinado
 FAT_MAN = (0, 163, 130, 11, 16) #Elimina a todos los aviones que hay en la pantalla
 PROYECTIL_CHETADO = (0, 177, 129, 15, 15) #Cambia el disparo del jugador
 
-#Bombardero
+'''Sprites del bombardero'''
 BOMBARDERO_DIMENSIONES_ABAJO = [2, 0, 116, 32, 24]
 BOMBARDERO_DIMENSIONES_ARRIBA = [2, 2, 84, 32, 24]
 BOMBARDERO_DIMENSIONES_DERECHA = [2, 135, 114, 26, 28]  

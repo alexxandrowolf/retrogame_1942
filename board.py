@@ -1,11 +1,11 @@
 import pyxel
 import random 
 import config
-from avionlocal import AvionJugador
-from enemigo_regular import EnemigoRegular
-from super_bombardero import SuperBombardero
+from avionLocal import AvionJugador
+from enemigoRegular import EnemigoRegular
+from superBombardero import SuperBombardero
 from enemigoRojo import EnemigoRojo
-from explosionMadre import Explosion
+from explosion import Explosion
 from proyectilEnemigo import DisparoEnemigo
 from bonus import BonusEnemigoRojo
 from bombardero import Bombardero
@@ -154,10 +154,6 @@ class App:
             #Duración de los textos que se muestran en el interludio
             if pyxel.frame_count % 125 == 0:
                 self.interludio = False
-            
-            
-            if pyxel.frame_count % 600 == 0:
-                self.enemigosRojosDerrotados = 0
 
             #Controlamos si matan a nuestro avión, así como sus disparos
             if not self.avion.alive and self.animacionAcabadaAuxiliar:
@@ -192,7 +188,7 @@ class App:
             el número deseado de enemigos en su lista correspondiente. Los enemigos regulares aparecen cada 200 frames, los enemigos rojos cada 600,
             los bombarderos medianos cada 700, y los superbombarderos cada 1250.'''
             #Enemigos Regulares
-            if pyxel.frame_count % 150 == 0:
+            if pyxel.frame_count % 100 == 0:
                 for i in range(random.randint(2, 5)):
                     lado = random.randint(0,1)
                     if lado == 0:
@@ -210,7 +206,7 @@ class App:
                     self.enemigosRojos.append(EnemigoRojo([config.ROJO_DCHA_LOOP, [-30 - (i * 40), 40]]))
 
             #Bombardero
-            if pyxel.frame_count % 500 == 0:
+            if pyxel.frame_count % 400 == 0:
                 self.bombarderos.append(Bombardero([config.BOMBARDERO_DIMENSIONES_ABAJO, [60, -50]]))
 
             #Superbombardero
@@ -240,7 +236,7 @@ class App:
                     self.avion.superbombardero += 1
                     self.avion.puntuacion += sb.puntuacion
 
-                if not sb.alive and len(sb.disparos) == 0 and sb.contador_muerte >= 209:
+                if (not sb.alive and len(sb.disparos) == 0 and sb.contador_muerte >= 209) or sb.posicion_muerte:
                     self.super_bombarderos.pop(self.super_bombarderos.index(sb))
 
                 for disparo in self.avion.disparos:
@@ -266,7 +262,12 @@ class App:
                         self.avion.perderVida()
             
             '''En el caso del bombardero mediano, el disparo es diferente, ya que no son disparos prefijados como en el superbombardero. Se realizan de manera
-            aleatoria, con una posibilidad de 1 entre 100 (que por cada frame no es tan poco como parece). '''
+            aleatoria, con una posibilidad de 1 entre 100 (que por cada frame no es tan poco como parece). Para disparar, en la lista disparos (atributo 
+            de board), se inserta un objeto DisparoEnemigo, en el que se introduce por parámetro por un lado la posición del bombardero, y por otro lado
+            la posición del avión del jugador, para que el disparo vaya en una dirección que tenga sentido y no vaya en sentidos extraños. Cuando la 
+            vida del bombardero se reduce a 0, animacionMuerte pasa a True y además de eliminarse el objeto, ocurre la animación de la explosión como
+            ya se ha explicado'''
+            
             #Bombardero
             for bombardero in self.bombarderos:
                 if bombardero.alive:
@@ -290,13 +291,21 @@ class App:
                         self.avion.puntuacion += bombardero.puntuacion
                     self.bombarderos.pop(self.bombarderos.index(bombardero))
 
+            '''En los enemigos regulares, su movimiento predeterminado es en diagonal hacia abajo, y según si ha aparecido por la izquierda o por la 
+            derecha irá en un sentido o en otro. Sin embargo, cuando se acerca demasiado al avión del jugador, cambia su driección y vuelve hacia arriba,
+            con su animación correspondiente. Se estableven las colisiones y el disparo, que será el mismo que el del bombardero. La muerte también seguirá
+            el mismo método que el bombardero.
+            '''
+            
             #Enemigo Regular
             for enemigo in self.enemigosRegulares:
                 if enemigo.y + 45 >= self.avion.y: 
                     enemigo.giro()
+                
                 if self.colisiones(enemigo, self.avion) and not self.avion.voltereta and self.avion.alive:
                     self.avion.perderVida()
                     enemigo.perderVida()
+                
                 if enemigo.y <= -20 and enemigo.contador_giro != 0:
                     enemigo.alive = False
                 
@@ -316,6 +325,9 @@ class App:
                         self.avion.regular += 1
                     self.enemigosRegulares.pop(self.enemigosRegulares.index(enemigo))
                 
+            '''Los enemigos rojos no disparan, simplemente se mueven en círculos y sueltan un bonus cuando son eliminados todos ellos (la lógica de los 
+            bonus se explica más adelante). Las colisiones y su animación de muerte se realiza de la misma forma que en los dos casos anterores'''
+            
             #Enemigo Rojo
             for enemigo in self.enemigosRojos:
 
@@ -335,7 +347,10 @@ class App:
                         self.avion.rojo += 1
                     self.enemigosRojos.pop(self.enemigosRojos.index(enemigo))
                         
-            #Lógica de la explosión
+            '''Aquí viene determinada la lógica de la explosión. Cuando matas a un enemigo e introduces el objeto Explosion en la lista, este for se la
+            recorre y la ejecuta. Si explosion.alive es True, simplemente se ejecuta la animacion. Cuando se acaba pasa a False, y en el caso de que esa
+            explosion sea la del jugador, esAnimacionMuerteJugador sería True, y daría paso al interludio o a la pantalla de gameover en caso de tener 0
+            vidas. En caso de ser la explosion de un avion cualquiera, simplemente la explosion se elimina de la lista al acabar la animación'''
             for explosion in self.explosiones:
                 if explosion.alive:
                     explosion.update()
@@ -344,7 +359,8 @@ class App:
                         self.animacionAcabadaAuxiliar = True
                     self.explosiones.pop(self.explosiones.index(explosion))
 
-            #Lógica de las Disparos de los enemigos
+            '''Lógica de los disparos enemigos, se mueven hasta que chocan con el avión del jugador o hasta que salen de la pantalla, momento en el que
+            son eliminados de la lista'''
             for disparo in self.disparos:
                 if disparo.alive:
                     disparo.update()
@@ -357,13 +373,14 @@ class App:
             dos objetos a partir de comparar sus [x] e [y] máximas y mínimas.
             '''
 
-            #A) Entre balas y enemigosRegulares
+            #Entre balas del jugador y enemigosRegulares
             for enemigo in self.enemigosRegulares:
                 for disparo in self.avion.disparos:
                     if self.colisiones(disparo, enemigo):
                         disparo.alive = False
                         enemigo.perderVida()
 
+            #Entre balas del jugador y enemigos rojos
             for enemigo in self.enemigosRojos:
                 for disparo in self.avion.disparos:
                     if self.colisiones(disparo, enemigo):
@@ -371,25 +388,31 @@ class App:
                         disparo.alive = False
                         enemigo.perderVida()
 
+            #Entre balas del jugador y bombarderos medianos
             for enemigo in self.bombarderos:
                 for disparo in self.avion.disparos:
                     if self.colisiones(disparo, enemigo):
                         disparo.alive = False
                         enemigo.perderVida()
 
-            #B) Entre balas enemigas y nuestro avion
+            #Entre balas enemigas y nuestro avion
             for disparo in self.disparos:
                 if self.colisiones(disparo, self.avion) and not self.avion.voltereta:
                     disparo.alive = False
                     self.avion.perderVida()
 
-            #C) Entre el avión del jugador y el bonus
+            #Entre el avión del jugador y el bonus
             for bonus in self.bonusJugador:
                 if self.colisiones(self.avion, bonus):
                     bonus.activado = True
 
 
-            #Construimos la lógica de los bonus
+            '''En este apartado se ejevuta la lógica de los bonus. Primero tenemos la aparición del bonus, que se realiza cuando el jugador mata a 
+            los cinco aviones rojo de una misma oleada. Cuando esto ocurre, se inserta un objeto BonusEnemigoRojo en una posición aleatoria de la 
+            pantalla que puede ser de tres tipos. Uno es muy parecido a la estrella del Mario Bros, te hace inmune a los enemigos y hace que si te 
+            chocas con ellos los elimines al instante. Otro te da un proyectil más ancho, que es útil para fallar menos balas. Y el último es una 
+            bomba nuclear que elimina a todos los enemigos que haya en pantalla instantáneamente.'''
+            
             if self.enemigosRojosDerrotados == 5: 
                 self.enemigosRojosDerrotados = 0
                 self.bonusEnemigoRojo = True
@@ -398,15 +421,15 @@ class App:
             for bonus in self.bonusJugador:
                 if bonus.activado:
                     if bonus.devolverTipoBonus() == "estrella":
-                        self.avion.health = 1000000
+                        self.avion.health = 1000000 # Tu vida se hace infinita y la vida del resto pasa a ser 1, para que cuando colisiones con ellos se eliminen
                         for sb in self.super_bombarderos:
                             sb.health = 1
                         for bombardero in self.bombarderos:
                             bombardero.health = 1
                     elif bonus.devolverTipoBonus() == "proyectilChetado":
-                        self.disparoChetado = True
+                        self.disparoChetado = True # disparoChetado True activa el disparo más ancho
                     else:
-                        for enemigo in self.enemigosRegulares:
+                        for enemigo in self.enemigosRegulares: # Elimina a todo tipo de enemigos que haya en pantalla
                             enemigo.health = 0
                             enemigo.animacionMuerte = True
                             
@@ -424,9 +447,9 @@ class App:
                                                         
                     bonus.duracionBonus() #Cuando el bonus está activado tiene una duración determinada
                 else:
-                    bonus.duracionDisplayBonusEnPantalla()
+                    bonus.duracionDisplayBonusEnPantalla() #Cuando todavía no se ha recogiso el bonus también tiene una duración en pantalla determinada
 
-                if not bonus.alive:
+                if not bonus.alive: #Cuando se acaba el bonus, todos los stats vuelven a sus valores estándar y el bonus se elimina de la lista
                     self.avion.health = 1
                     self.disparoChetado = False
                     for sb in self.super_bombarderos:
@@ -436,16 +459,23 @@ class App:
                     self.bonusJugador.pop(self.bonusJugador.index(bonus))
 
     def draw(self):
+        '''En el draw, lo primero que se pinta es la pantalla inicial. En ella, el fondo es el mismo que en el juego, un azul marino que simula el
+        océano, y también se pueden ver las islas, que van apareciendo de forma periódica a medida que pasa el tiempo. Además, aparece el título del
+        juego, y si pulsas la tecla S el juego se inicia'''
+        
         if not self.gameover:
             #CAPA **0**
-            pyxel.load("assets/fondo.pyxres")
-            pyxel.cls(12)
+            pyxel.load("assets/fondo.pyxres") #Cargamos el archivo pyxres que contiene los sprites de las islas que aparecen de fondo
+            pyxel.cls(5)
             
             isla1_x = -500 + (pyxel.frame_count % (pyxel.height + 1300))
             isla2_x = -1200 + (pyxel.frame_count % (pyxel.height + 1300)) #Definimos cuándo van a aparecer las islas y con qué frecuencia
             
             pyxel.blt(0, isla1_x, 0, 0, 0, 101, 151, colkey=0)
             pyxel.blt(pyxel.width - 131, isla2_x, 0, 124, 0, 131, 126, colkey=0) 
+            
+            if not self.start and not self.gameover:
+                self.pantallaInicio()    
             
             if self.start:
                 pyxel.text(5, 5,"HIGH SCORE:", col=7)
@@ -457,17 +487,21 @@ class App:
                 pyxel.text(40, 15, str(self.avion.puntuacion), col=7)
                 pyxel.text(245, 5, str(self.avion.numeroVolteretas), col=7)
                 pyxel.text(245, 15, str(self.avion.respawn), col=7)
-
-        if not self.start and not self.gameover:
-            self.pantallaInicio()
         
-        if self.gameover:
+        if self.gameover: #Si el avión pierde todas sus vidas se ejecuta este método
             self.pantallaGameover()
 
+        '''Una vez que se inicia el juego, se pinta lo que es la partida. Se pinta el avión del jugador, con sus respectivas animaciones de giro.
+        Se pintan los enemigos, siempre recorriendo bucles for, y pintando el sprite correspondiente a la animación que el objeto esté realizando.
+        También se pintan todos los disparos, tanto de los enemigos como los nuestros, y las explosiones. Para pintar todos los objetos simplemente 
+        hacemos pyxel.blt al atributo blt de cada objeto, en el que se encuentran todos los parámetros para que el sprite se pinte correctamente 
+        (importante añadir el asterisco antes de cada blt, para que se introduzca cada valor de la lista por separado; y el colkey, para eliminar el
+        fondo indeseado de los sprites'''
+        
         #CAPA **1**
         if self.start and not self.gameover:
             # pyxel.pal()
-            pyxel.load("assets/avionPlayersyOtros.pyxres")
+            pyxel.load("assets/avionPlayersyOtros.pyxres") #Cargamos el archivo pyxres en el que están los sprites de los aviones las explosiones
 
             if self.avion.alive:
                 self.avion.drawAvion()
@@ -475,7 +509,7 @@ class App:
 
             
             for sb in self.super_bombarderos:
-                if sb.alive or sb.contador_muerte < 630: 
+                if sb.alive or sb.contador_muerte < 630: #El contador_muerte lo utilizamos para que el superbombardero se pinte hasta que su animación de muerte haya acabado
                     sb.drawAvion()
                     pyxel.blt(*sb.blt, colkey = 7)
                 for disparo in sb.disparos: 
@@ -506,8 +540,13 @@ class App:
                 pyxel.blt(*disparo.blt, colkey=7)
 
 
-            #Aquí se pintan las hélices
-            if self.avion.alive:
+            '''En este apartado se pintan las hélices de los aviones, tanto las del jugador como de los enemigos. El sistema es simple, donde se encuentran
+            las hélices de los sprites, se dibujan de manera intermitente cuatro rayas, que al aparecer y desaparecer tan rápido, dan la sensación de que
+            son dos hélices girando. Ha quedado bastante largo y repetitivo, pero no hemos encontrado forma de simplificarlo ya que para cada sprite de cada 
+            animación de cada avión hay que pintar las hélices en posiciones diferentes y de longitudes diferentes'''
+            
+            #Para el avión del jugador
+            if self.avion.alive: 
                 if pyxel.frame_count % 2 == 0 and (self.avion.sprite == config.AVION_JUGADOR_SPRITE or self.avion.sprite == config.AVION_JUGADOR_SPRITE_LEFT_1 or self.avion.sprite == config.AVION_JUGADOR_SPRITE_RIGHT_1):
                     pyxel.rect(self.avion.x+5, self.avion.y+2, 3, 1, col=4)
                     pyxel.rect(self.avion.x+9, self.avion.y+2, 3, 1, col=10)
@@ -534,6 +573,8 @@ class App:
                     pyxel.rect(self.avion.x+13, self.avion.y+2, 1, 1, col=10)
                     pyxel.rect(self.avion.x+15, self.avion.y+2, 3, 1, col=4) 
 
+            
+            #Para el enemigo regular
             for enemigo in self.enemigosRegulares:
                 if pyxel.frame_count % 2 == 0 and enemigo.sprite == config.ENEMIGO_REGULAR_DIMENSIONES_1:
                     pyxel.rect(enemigo.x+5, enemigo.y+14, 3, 1, col=10)
@@ -542,6 +583,7 @@ class App:
                     pyxel.rect(enemigo.x+5, enemigo.y+1, 3, 1, col=10)
                     pyxel.rect(enemigo.x+9, enemigo.y+1, 3, 1, col=13)    
                     
+            #Para el bombardero
             for bombardero in self.bombarderos:
                 if pyxel.frame_count % 2 == 0 and bombardero.sprite == config.BOMBARDERO_DIMENSIONES_ABAJO:
                     pyxel.rect(bombardero.x + 8, bombardero.y + 20, 3, 1, col=4)
@@ -555,6 +597,7 @@ class App:
                     pyxel.rect(bombardero.x+ 21, bombardero.y + 17, 2, 1, col=10)
                     pyxel.rect(bombardero.x+ 21, bombardero.y + 20, 2, 1, col=4)
 
+            #Para el superbombardero
             for sb in self.super_bombarderos:
                 if pyxel.frame_count % 2 == 0 and sb.alive:
                     pyxel.rect(sb.x + 17, sb.y + 9, 4, 1, col=4)
@@ -562,12 +605,14 @@ class App:
                     pyxel.rect(sb.x+ 39, sb.y + 9, 4, 1, col=10)
                     pyxel.rect(sb.x+ 44, sb.y + 9, 4, 1, col=4)
 
-            #Dibujamos las explosiones
+            #Aquí se dibujan las explosiones de la lista explosiones que hemos mencionado anteriormente
             for explosion in self.explosiones:
                 explosion.draw()
                 pyxel.blt(*explosion.blt, colkey=7)
             
-            #Dibujamos los bonuses
+            '''Aquí se dibujan los bonus en pantalla, además de que si se activa el bonus estrella, se cambian los colores del avión con los del arcoíris
+            con la función pyxel.pal
+            '''
             for bonus in self.bonusJugador:
                 if self.bonusEnemigoRojo and not bonus.activado:
                     pyxel.blt(bonus.x, bonus.y, *bonus.sprite, colkey=8)
@@ -580,6 +625,10 @@ class App:
                 self.pantallaEntreMuertes()         
     
     
+    '''Esta es la función general para las colisiones, en la que introduces por parámetro los objetos entre los que quieres establecer la colisión.
+    En la función, se toma el ancho y el largo de los sprites de ambos objetos, y se comprueba las interseccion tanto en el eje y como en el eje x de 
+    los dos objetos. Si se cumple la colisión, el método devuelve True, y se producirá la pérdida de vida o la eliminación del objeto correspondiente'''
+    
     def colisiones(self, objeto1, objeto2):
         
         if (objeto1.x + objeto1.sprite[3] - 1  > objeto2.x 
@@ -588,8 +637,11 @@ class App:
             and objeto2.y + objeto2.sprite[4] - 1 > objeto1.y):
             return True
 
+    '''Este es el método en el que se pinta la pantalla del principio. En ella se dibuja el título, con efecto 3D y con el cambio de colores realizado
+    con el pyxel.pal.'''
+    
     def pantallaInicio(self):
-        pyxel.load("assets/titulo.pyxres")
+        pyxel.load("assets/titulo.pyxres") #Se carga el archivo pyxres en el que están los sprites del título
         pyxel.pal()
         pyxel.pal(15, pyxel.frame_count % 16)
 
@@ -603,10 +655,12 @@ class App:
         pyxel.load("assets/avionPlayersyOtros.pyxres")
         pyxel.blt(96, 220, 1,4,37,64,15)
 
+    '''La pantalla del interludio, en la que básicamente ya aparece nuestro avión y te pone la frase de la Batalla de Midway'''
     def pantallaEntreMuertes(self):
         pyxel.text(95, 40,"BATALLA DE MIDWAY", col=7)
         pyxel.text(73, 50, "¡DESTRUYE A TODOS PARA GANAR!", col=7)
 
+    '''La pantalla de Gameover, en la que aparecen tus estadísticas: tu puntuación récord, los enemigos abatidos de cada tipo...'''
     def pantallaGameover(self):
         pyxel.cls(12)
         pyxel.pal(15, pyxel.frame_count%16)

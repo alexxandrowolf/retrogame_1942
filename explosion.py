@@ -12,7 +12,7 @@ class Explosion:
         self.frames = 0 #Frames que han pasado
         self.spritesExplosion = sprites
         self.caracteristicasAnimacion = caracteristicasAnimacion
-        self.longitudEntreFrames = self.caracteristicasAnimacion[0] #Intervalo entre sprites
+        self.longitudEntreFrames = self.caracteristicasAnimacion[0] #Intervalo entre cambio de sprites
         self.transparencia = self.caracteristicasAnimacion[1] #Si la transparencia es True genera un efecto intermitente
         self.esAnimacionMuerteJugador = self.caracteristicasAnimacion[2] #Nos permite discriminar en el board si la animación es por la muerte del jugador o no
     

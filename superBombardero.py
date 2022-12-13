@@ -1,6 +1,6 @@
 import config
 from avionMadre import Avion
-from proyectil_sb import ProyectilSb
+from proyectilSb import ProyectilSb
 
 class SuperBombardero(Avion):
     '''Realizamos herencia para que el superbombardero reciba los mismos métodos de la clase Avion, al igual que los atributos del init tal como
@@ -15,11 +15,14 @@ class SuperBombardero(Avion):
         self.disparos = []
         self.contador = 0
         self.contador_muerte = 0
+        self.posicion_muerte = False
         
-
+    '''Establecemos el movimiento del avión, que va a ser fijo. Para ello utilizamos un contador que se actualiza cada frame, y con el que vamos
+    moviendo el superbombardero por la pantalla. Para hacer los giros, se utilizan unos métodos específicos que se explican más adelante'''
+    
     def move(self):
-        if self.y <= -100:  #Establecemos que si el superbombardero sale del mapa su self.alive pase a False
-            self.alive = False
+        if self.y <= -100:  #Establecemos que si el superbombardero sale del mapa su self.posicion_muerte pase a True
+            self.posicion_muerte = True
 
         #A partir de aquí, utilizamos contadores que se actualizan cada frame para hacer el movimiento
 
@@ -192,7 +195,9 @@ class SuperBombardero(Avion):
             self.disparos.append(ProyectilSb(self.x + 30, self.y + 30, config.PROYECTIL_SB, -3, 3))
 
     '''El método morir se activa cuando el self.alive del superbombardero es False. Utiliza un contador específico creado solo para la animación de
-    muerte, y va iterando cada sprite a la vez que el contador_muerte va avanzando.  
+    muerte, y va iterando cada sprite a la vez que el contador_muerte va avanzando. Todas estas animaciones han quedado muy largas y repetitivas, pero 
+    no hemos encontrado forma de realizar animaciones tan largas sin el uso de contadores y sin un código tan repetitivo, ya que en cada animación 
+    hay un gran número de sprites  
     '''
     
     def morir(self):

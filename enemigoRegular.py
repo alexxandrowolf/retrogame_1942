@@ -1,17 +1,22 @@
 import config
 from avionMadre import Avion
 import random
-
+'''La clas del enemigo regular, que recibe herencia de la clase madre Avion'''
 class EnemigoRegular(Avion):
     def __init__(self, nave: list, stats = None):
         super().__init__(nave, stats)
-        self.limite = random.randint(48, 188)
-        self.girar = False
-        self.contador_giro = 0
-        self.direccionRandomX = random.randint(0,1)
-        self.x_inicial = self.x
+        
+        self.girar = False #Booleano que sirve para decirle al objeto si tiene que girar o no
+        self.contador_giro = 0 #Contador para establecer la animación de giro
+        
+        self.x_inicial = self.x #La posición inicial del avión al crearse en el eje x
 
 
+    '''La función moverse va a realizar un movimiento u otro dependiendo de la posición inicial en la que el objeto sea generado. Si es generado a la 
+    izquierda, el objeto empezará moviéndose hacia abajo y a la derecha, y si es generado a la derecha irá hacia abajo y a la izquierda. En el momento
+    en el que el enemigo se acerca mucho a la posición del avión jugador en el eje x, self.girar pasa a True, y el avión pasa de ir hacia abajo a ir
+    hacia arriba con una pequeña animación, que dependerá de si gira hacia la izquierda o hacia la derecha'''
+    
     def moverse(self):
         if self.x_inicial < 60:
             if not self.girar:
@@ -39,6 +44,9 @@ class EnemigoRegular(Avion):
             
     def giro(self):
         self.girar = True
+    
+    '''Las funciones de giro, que son iguales que las de los bombarderos y superbombarderos, a través de un contador se va variando la velocidad del 
+    avión en el eje x y la del eje y, logrando el giro deseado'''
     
     def giro_derecha(self):
         if self.contador_giro < 10:

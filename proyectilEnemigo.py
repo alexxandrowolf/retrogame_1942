@@ -1,3 +1,5 @@
+'''Clase para el disparos de los enemigos que disparan aleatoriamente (enemigo regular y bombardero) se le introduce por parámetro la posición del
+avión que dispara, la posición del avión al que dispara (el nuestro), y sus stats'''
 class DisparoEnemigo:
     def __init__(self, posicionAvionEnemigo: list, posicionAvionJugador, stats: list):
         #Posición desde donde se va a lanzar
@@ -21,7 +23,8 @@ class DisparoEnemigo:
         self.alive = True
 
     def update(self):
-        #La posición del jugador determina la DIRECCIÓN del disparo del enemigo
+        '''La posición del jugador determina la DIRECCIÓN del disparo del enemigo'''
+        
         if self.y > 256 or self.y < 0:
             self.alive = False
             
